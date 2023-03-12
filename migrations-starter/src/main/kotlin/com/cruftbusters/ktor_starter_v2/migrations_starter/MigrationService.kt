@@ -22,7 +22,7 @@ class MigrationService(
       executeMigrations(connection, statements.since(currentVersion))
       updateVersion(connection, statements.latestVersion)
     } else {
-      executeMigrations(connection, statements.all())
+      executeMigrations(connection, statements.all)
       insertVersion(connection, statements.latestVersion)
     }
   }

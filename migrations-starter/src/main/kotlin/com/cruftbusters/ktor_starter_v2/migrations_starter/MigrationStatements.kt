@@ -1,6 +1,9 @@
 package com.cruftbusters.ktor_starter_v2.migrations_starter
 
-typealias MigrationStatement = Pair<Int, String>
+data class MigrationStatement(
+  val version: Int,
+  val statement: String,
+)
 
 class MigrationStatements(
   private vararg val statements: MigrationStatement,
@@ -15,10 +18,10 @@ class MigrationStatements(
   }
 
   fun since(version: Int): List<String> = statements
-    .filter { (statementVersion, _) -> statementVersion > version }
-    .map { it.second }
+    .filter { it.version > version }
+    .map { it.statement }
 
-  fun all() = statements.map { it.second }
+  val all = statements.map { it.statement }
 
-  val latestVersion = statements.maxOf { it.first }
+  val latestVersion = statements.maxOf { it.version }
 }
