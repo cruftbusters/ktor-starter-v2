@@ -2,14 +2,14 @@ package com.cruftbusters.ktor_starter_v2.migrations_starter
 
 
 class MigrationStatements(
-  block: Builder.() -> Unit,
+  private val statements: List<VersionedStatement>
 ) {
-  private val statements = Builder().apply(block).statements
-
-  class Builder(val statements: MutableList<VersionedStatement> = mutableListOf()) {
+  class Builder(private val statements: MutableList<VersionedStatement> = mutableListOf()) {
     fun add(version: Int, statement: String) {
       statements.add(VersionedStatement(version, statement))
     }
+
+    fun build() = MigrationStatements(statements)
   }
 
   data class VersionedStatement(val version: Int, val statement: String)
