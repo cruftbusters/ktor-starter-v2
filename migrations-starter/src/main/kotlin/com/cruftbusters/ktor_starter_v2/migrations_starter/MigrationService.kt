@@ -1,5 +1,6 @@
 package com.cruftbusters.ktor_starter_v2.migrations_starter
 
+import org.slf4j.Logger
 import java.sql.Connection
 
 typealias MigrationVersion = Int
@@ -7,6 +8,7 @@ typealias MigrationVersion = Int
 class MigrationService(
   connectionSupplier: () -> Connection,
   private val statements: MigrationStatements,
+  private val logger: Logger,
   private val name: String = "migration-service",
 ) {
   private val connection = connectionSupplier()
@@ -34,8 +36,10 @@ class MigrationService(
       }
   }
 
-  private fun executeMigrations(statements: List<String>) = statements
-    .forEach { statement -> connection.createStatement().execute(statement) }
+  private fun executeMigrations(statements: List<String>) = statements.forEach { statement ->
+    logger.info("applied: '$statement'")
+    connection.createStatement().execute(statement)
+  }
 
   private fun insertVersion(version: MigrationVersion) = connection
     .prepareStatement("insert into migration_sets (name, version) values (?, ?)").apply {

@@ -4,18 +4,24 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
+import io.mockk.verify
+import org.slf4j.Logger
 
 class MigrationServiceTest : FunSpec({
   val dataSource = HikariDataSource(HikariConfig().apply { jdbcUrl = "jdbc:h2:mem:migration-service-test" })
+  val logger = mockk<Logger>(relaxUnitFun = true)
   context("initial migration") {
     val service = MigrationService(
       dataSource::getConnection,
       MigrationStatements(
         Pair(1, "create table demo (id text primary key, document text)"),
       ),
+      logger,
     )
     test("should migrate without fail") {
       service.migrate()
+      verify { logger.info("applied: 'create table demo (id text primary key, document text)'") }
     }
     test("should be able to utilize migrations") {
       val connection = dataSource.connection
@@ -33,6 +39,7 @@ class MigrationServiceTest : FunSpec({
       MigrationStatements(
         Pair(1, "create table demo (id text primary key, document text)"),
       ),
+      logger,
     ).migrate()
   }
   context("updated migration") {
@@ -42,9 +49,11 @@ class MigrationServiceTest : FunSpec({
         Pair(1, "create table demo (id text primary key, document text)"),
         Pair(2, "alter table demo add column another_document text"),
       ),
+      logger,
     )
     test("should migrate without fail") {
       service.migrate()
+      verify { logger.info("applied: 'alter table demo add column another_document text'") }
     }
     test("should be able to utilize migrations") {
       val connection = dataSource.connection

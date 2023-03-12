@@ -27,6 +27,7 @@ dependencies {
   implementation("org.postgresql:postgresql:42.5.1")
   testImplementation("io.kotest:kotest-runner-junit5-jvm:5.5.5")
   testImplementation("io.ktor:ktor-server-tests-jvm:2.2.4")
+  testImplementation("io.mockk:mockk:1.13.4")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.8.10")
 }
 
