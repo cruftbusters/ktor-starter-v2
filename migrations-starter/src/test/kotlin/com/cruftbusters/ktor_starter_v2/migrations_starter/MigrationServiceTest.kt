@@ -2,46 +2,23 @@ package com.cruftbusters.ktor_starter_v2.migrations_starter
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class MigrationServiceTest : FunSpec({
-  val config = HikariConfig().apply { jdbcUrl = "jdbc:h2:mem:migration-service-test" }
-  val ds = HikariDataSource(config)
-  test("should raise error when statement version not greater than MIN_VALUE") {
-    val error = shouldThrow<Error> {
-      MigrationService(
-        { TODO() },
-        listOf(Pair(Int.MIN_VALUE, "doesnt matter"))
-      )
-    }
-    error.message shouldBe "Statements must have version greater than -2147483648"
-  }
-  test("should raise error when statement versions are non-increasing") {
-    val error = shouldThrow<Error> {
-      MigrationService(
-        { TODO() },
-        listOf(
-          Pair(8, "doesnt matter"),
-          Pair(8, "doesnt matter"),
-        )
-      )
-    }
-    error.message shouldBe "Statements versions 8 and 8 must be unique and increasing"
-  }
-  context("execute migrations") {
+  val dataSource = HikariDataSource(HikariConfig().apply { jdbcUrl = "jdbc:h2:mem:migration-service-test" })
+  context("initial migration") {
     val service = MigrationService(
-      ds::getConnection,
-      listOf(
-        Pair(Int.MIN_VALUE + 1, "create table demo (id text primary key, document text)")
+      dataSource::getConnection,
+      MigrationStatements(
+        Pair(1, "create table demo (id text primary key, document text)"),
       ),
     )
     test("should migrate without fail") {
       service.migrate()
     }
     test("should be able to utilize migrations") {
-      val connection = ds.connection
+      val connection = dataSource.connection
       connection.createStatement().execute("insert into demo (id, document) values ('the id', 'the document')")
       connection.createStatement().executeQuery("select id, document from demo").use { resultSet ->
         resultSet.next()
@@ -49,8 +26,37 @@ class MigrationServiceTest : FunSpec({
         resultSet.getString(2) shouldBe "the document"
       }
     }
-    test("should not raise error from idempotent migrate") {
+  }
+  test("should not raise error when re-applying migrations") {
+    MigrationService(
+      dataSource::getConnection,
+      MigrationStatements(
+        Pair(1, "create table demo (id text primary key, document text)"),
+      ),
+    ).migrate()
+  }
+  context("updated migration") {
+    val service = MigrationService(
+      dataSource::getConnection,
+      MigrationStatements(
+        Pair(1, "create table demo (id text primary key, document text)"),
+        Pair(2, "alter table demo add column another_document text"),
+      ),
+    )
+    test("should migrate without fail") {
       service.migrate()
+    }
+    test("should be able to utilize migrations") {
+      val connection = dataSource.connection
+      connection.createStatement()
+        .execute("insert into demo (id, document, another_document) values ('another id', 'the document', 'another document')")
+      connection.createStatement()
+        .executeQuery("select id, document, another_document from demo where id = 'another id'").use { resultSet ->
+          resultSet.next()
+          resultSet.getString(1) shouldBe "another id"
+          resultSet.getString(2) shouldBe "the document"
+          resultSet.getString(3) shouldBe "another document"
+        }
     }
   }
 })
