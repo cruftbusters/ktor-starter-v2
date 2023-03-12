@@ -5,11 +5,12 @@ class MigrationStatements(
   private val statements: List<VersionedStatement>
 ) {
   class Builder(private val statements: MutableList<VersionedStatement> = mutableListOf()) {
-    fun add(version: Int, statement: String) {
-      val lastVersion = statements.map { it.version }.lastOrNull()
-      if (lastVersion != null && lastVersion >= version)
-        throw Error("Statements versions $lastVersion and $version must be unique and increasing")
-      statements.add(VersionedStatement(version, statement))
+    private var previousVersion: Int? = null
+    fun add(version: Int, text: String) {
+      if (previousVersion != null && previousVersion!! >= version)
+        throw Error("Statements versions $previousVersion and $version must be unique and increasing")
+      previousVersion = version
+      statements.add(VersionedStatement(version, text))
     }
 
     fun build() = MigrationStatements(statements)
