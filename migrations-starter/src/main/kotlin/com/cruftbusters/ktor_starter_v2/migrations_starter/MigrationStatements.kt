@@ -1,7 +1,9 @@
 package com.cruftbusters.ktor_starter_v2.migrations_starter
 
+typealias MigrationStatement = Pair<Int, String>
+
 class MigrationStatements(
-  private vararg val statements: Pair<Int, String>,
+  private vararg val statements: MigrationStatement,
 ) {
   init {
     statements.toList().windowed(2).forEach { (first, last) ->
