@@ -15,9 +15,9 @@ class MigrationServiceTest : FunSpec({
     val service = MigrationService(
       dataSource::getConnection,
       logger,
-      statements = MigrationStatements(
-        MigrationStatement(1, "create table demo (id text primary key, document text)"),
-      ),
+      statements = MigrationStatements {
+        add(1, "create table demo (id text primary key, document text)")
+      },
     )
     test("should migrate without fail") {
       service.migrate()
@@ -37,19 +37,19 @@ class MigrationServiceTest : FunSpec({
     MigrationService(
       dataSource::getConnection,
       logger,
-      statements = MigrationStatements(
-        MigrationStatement(1, "create table demo (id text primary key, document text)"),
-      ),
+      statements = MigrationStatements {
+        add(1, "create table demo (id text primary key, document text)")
+      },
     ).migrate()
   }
   context("updated migration") {
     val service = MigrationService(
       dataSource::getConnection,
       logger,
-      statements = MigrationStatements(
-        MigrationStatement(1, "create table demo (id text primary key, document text)"),
-        MigrationStatement(2, "alter table demo add column another_document text"),
-      ),
+      statements = MigrationStatements {
+        add(1, "create table demo (id text primary key, document text)")
+        add(2, "alter table demo add column another_document text")
+      },
     )
     test("should migrate without fail") {
       service.migrate()
