@@ -14,10 +14,10 @@ class MigrationServiceTest : FunSpec({
   context("initial migration") {
     val service = MigrationService(
       dataSource::getConnection,
-      MigrationStatements(
+      logger,
+      statements = MigrationStatements(
         MigrationStatement(1, "create table demo (id text primary key, document text)"),
       ),
-      logger,
     )
     test("should migrate without fail") {
       service.migrate()
@@ -36,20 +36,20 @@ class MigrationServiceTest : FunSpec({
   test("should not raise error when re-applying migrations") {
     MigrationService(
       dataSource::getConnection,
-      MigrationStatements(
+      logger,
+      statements = MigrationStatements(
         MigrationStatement(1, "create table demo (id text primary key, document text)"),
       ),
-      logger,
     ).migrate()
   }
   context("updated migration") {
     val service = MigrationService(
       dataSource::getConnection,
-      MigrationStatements(
+      logger,
+      statements = MigrationStatements(
         MigrationStatement(1, "create table demo (id text primary key, document text)"),
         MigrationStatement(2, "alter table demo add column another_document text"),
       ),
-      logger,
     )
     test("should migrate without fail") {
       service.migrate()

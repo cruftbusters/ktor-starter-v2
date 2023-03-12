@@ -7,11 +7,13 @@ typealias MigrationVersion = Int
 
 class MigrationService(
   connectionSupplier: () -> Connection,
-  private val statements: MigrationStatements,
   private val logger: Logger,
   private val name: String = "migration-service",
+  private val statements: MigrationStatements,
 ) {
-  private val connection = connectionSupplier()
+  private val connection = connectionSupplier().apply {
+    createStatement().execute("create table if not exists migration_sets (name text primary key, version integer)")
+  }
 
   fun migrate() {
     val currentVersion = getCurrentVersion()
@@ -24,17 +26,13 @@ class MigrationService(
     }
   }
 
-  private fun getCurrentVersion(): Int? {
-    connection.createStatement()
-      .execute("create table if not exists migration_sets (name text primary key, version integer)")
-    return connection
-      .prepareStatement("select version from migration_sets where name = ?")
-      .apply { setString(1, name) }
-      .executeQuery().use { resultSet ->
-        if (resultSet.next()) resultSet.getInt(1)
-        else null
-      }
-  }
+  private fun getCurrentVersion() = connection
+    .prepareStatement("select version from migration_sets where name = ?")
+    .apply { setString(1, name) }
+    .executeQuery().use { resultSet ->
+      if (resultSet.next()) resultSet.getInt(1)
+      else null
+    }
 
   private fun executeMigrations(statements: List<String>) = statements.forEach { statement ->
     logger.info("applied: '$statement'")
