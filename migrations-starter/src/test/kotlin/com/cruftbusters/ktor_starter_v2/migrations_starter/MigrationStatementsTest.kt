@@ -11,7 +11,7 @@ class MigrationStatementsTest : FunSpec({
         add(7, "doesnt matter")
         add(8, "doesnt matter")
         add(8, "doesnt matter")
-      }.build()
+      }
     }
     error.message shouldBe "Statements versions 8 and 8 must be unique and increasing"
   }
