@@ -9,9 +9,9 @@ class MigrationService(
   private val connectionSupplier: () -> Connection,
   private val logger: Logger,
   private val name: String = "migration-service",
-  private val block: MigrationStatements.Builder.() -> Unit,
+  block: MigrationStatements.Builder.() -> Unit,
 ) {
-  private val statements: MigrationStatements = MigrationStatements.Builder().apply(block).build()
+  private val statements: MigrationStatements = MigrationStatements(block)
   fun migrate() = connectionSupplier().use { migrate(it) }
 
   private fun migrate(connection: Connection) {

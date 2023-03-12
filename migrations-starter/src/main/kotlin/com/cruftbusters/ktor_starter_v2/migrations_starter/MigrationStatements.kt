@@ -4,7 +4,9 @@ package com.cruftbusters.ktor_starter_v2.migrations_starter
 class MigrationStatements(
   private val statements: List<VersionedStatement>
 ) {
-  class Builder(private val statements: MutableList<VersionedStatement> = mutableListOf()) {
+  constructor(block: Builder.() -> Unit) : this(Builder().apply(block).statements)
+
+  class Builder(internal val statements: MutableList<VersionedStatement> = mutableListOf()) {
     private var previousVersion: Int? = null
     fun add(version: Int, text: String) {
       if (previousVersion != null && previousVersion!! >= version)
