@@ -8,15 +8,15 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.slf4j.Logger
 
-class MigrationServiceTest : FunSpec({
+class DatabaseMigratorTest : FunSpec({
   val dataSource = HikariDataSource(HikariConfig().apply { jdbcUrl = "jdbc:h2:mem:migration-service-test" })
   val logger = mockk<Logger>(relaxUnitFun = true)
   context("initial migration") {
-    val service = MigrationService(dataSource::getConnection, logger) {
+    val migrator = DatabaseMigrator(dataSource::getConnection, logger) {
       add(1, "create table demo (id text primary key, document text)")
     }
     test("should migrate without fail") {
-      service.migrate()
+      migrator.migrate()
       verify { logger.info("applied: 'create table demo (id text primary key, document text)'") }
     }
     test("should be able to utilize migrations") {
@@ -30,12 +30,12 @@ class MigrationServiceTest : FunSpec({
     }
   }
   test("should not raise error when re-applying migrations") {
-    MigrationService(dataSource::getConnection, logger) {
+    DatabaseMigrator(dataSource::getConnection, logger) {
       add(1, "create table demo (id text primary key, document text)")
     }.migrate()
   }
   context("updated migration") {
-    val service = MigrationService(dataSource::getConnection, logger) {
+    val service = DatabaseMigrator(dataSource::getConnection, logger) {
       add(1, "create table demo (id text primary key, document text)")
       add(2, "alter table demo add column another_document text")
     }

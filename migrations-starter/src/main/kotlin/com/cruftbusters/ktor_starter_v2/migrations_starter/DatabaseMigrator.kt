@@ -5,13 +5,13 @@ import java.sql.Connection
 
 typealias MigrationVersion = Int
 
-class MigrationService(
+class DatabaseMigrator(
   private val connectionSupplier: () -> Connection,
   private val logger: Logger,
   private val name: String = "migration-service",
-  block: MigrationStatements.Builder.() -> Unit,
+  block: VersionedStatements.Builder.() -> Unit,
 ) {
-  private val statements: MigrationStatements = MigrationStatements(block)
+  private val statements: VersionedStatements = VersionedStatements(block)
   fun migrate() = connectionSupplier().use { migrate(it) }
 
   private fun migrate(connection: Connection) {
