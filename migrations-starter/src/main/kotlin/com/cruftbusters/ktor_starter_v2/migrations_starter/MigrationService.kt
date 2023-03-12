@@ -5,21 +5,13 @@ import java.sql.Connection
 typealias MigrationVersion = Int
 
 class MigrationService(
-  private val connection: Connection,
+  connectionSupplier: () -> Connection,
   private val statements: List<Pair<MigrationVersion, String>>,
   private val name: String = "migration-service",
 ) {
-  fun migrate() {
+  init {
     validateStatementVersions()
     validateStatementVersionsIncreasing()
-
-    connection.createStatement()
-      .execute("create table if not exists migration_sets (name text primary key, version integer)")
-    val currentVersion = getCurrentVersion()
-    executeMigrations(currentVersion)
-    val (version, _) = statements.last()
-    if (currentVersion > Int.MIN_VALUE) updateVersion(version)
-    else insertVersion(version)
   }
 
   private fun validateStatementVersions() {
@@ -34,6 +26,18 @@ class MigrationService(
       if (nextVersion <= version)
         throw Error("Statements versions $version and $nextVersion must be unique and increasing")
     }
+  }
+
+  private val connection = connectionSupplier()
+
+  fun migrate() {
+    connection.createStatement()
+      .execute("create table if not exists migration_sets (name text primary key, version integer)")
+    val currentVersion = getCurrentVersion()
+    executeMigrations(currentVersion)
+    val (version, _) = statements.last()
+    if (currentVersion > Int.MIN_VALUE) updateVersion(version)
+    else insertVersion(version)
   }
 
   private fun getCurrentVersion() = connection

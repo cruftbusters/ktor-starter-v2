@@ -20,6 +20,7 @@ repositories {
 dependencies {
   implementation("ch.qos.logback:logback-classic:1.2.11")
   implementation("com.h2database:h2:2.1.214")
+  implementation("com.zaxxer:HikariCP:5.0.1")
   implementation("io.ktor:ktor-server-config-yaml:2.2.4")
   implementation("io.ktor:ktor-server-core-jvm:2.2.4")
   implementation("io.ktor:ktor-server-netty-jvm:2.2.4")
