@@ -20,12 +20,13 @@ class DatabaseMigratorTest : FunSpec({
       verify { logger.info("applied: 'create table demo (id text primary key, document text)'") }
     }
     test("should be able to utilize migrations") {
-      val connection = dataSource.connection
-      connection.createStatement().execute("insert into demo (id, document) values ('the id', 'the document')")
-      connection.createStatement().executeQuery("select id, document from demo").use { resultSet ->
-        resultSet.next()
-        resultSet.getString(1) shouldBe "the id"
-        resultSet.getString(2) shouldBe "the document"
+      dataSource.connection.use {
+        it.createStatement().execute("insert into demo (id, document) values ('the id', 'the document')")
+        it.createStatement().executeQuery("select id, document from demo").use { resultSet ->
+          resultSet.next()
+          resultSet.getString(1) shouldBe "the id"
+          resultSet.getString(2) shouldBe "the document"
+        }
       }
     }
   }
@@ -44,16 +45,17 @@ class DatabaseMigratorTest : FunSpec({
       verify { logger.info("applied: 'alter table demo add column another_document text'") }
     }
     test("should be able to utilize migrations") {
-      val connection = dataSource.connection
-      connection.createStatement()
-        .execute("insert into demo (id, document, another_document) values ('another id', 'the document', 'another document')")
-      connection.createStatement()
-        .executeQuery("select id, document, another_document from demo where id = 'another id'").use { resultSet ->
-          resultSet.next()
-          resultSet.getString(1) shouldBe "another id"
-          resultSet.getString(2) shouldBe "the document"
-          resultSet.getString(3) shouldBe "another document"
-        }
+      dataSource.connection.use {
+        it.createStatement()
+          .execute("insert into demo (id, document, another_document) values ('another id', 'the document', 'another document')")
+        it.createStatement()
+          .executeQuery("select id, document, another_document from demo where id = 'another id'").use { resultSet ->
+            resultSet.next()
+            resultSet.getString(1) shouldBe "another id"
+            resultSet.getString(2) shouldBe "the document"
+            resultSet.getString(3) shouldBe "another document"
+          }
+      }
     }
   }
 })
