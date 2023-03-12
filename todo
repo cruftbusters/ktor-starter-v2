@@ -1,5 +1,4 @@
 # ktor-starter/todo
-1. migrations-starter - h2 and pg migrations starter project
 1. http-security-starter - two-way tls authentication for ktor clients and servers
 1. picocli-starter - add cli switch between ktor server and other utilities
 1. s3-starter - return job object and stream processing results to s3
