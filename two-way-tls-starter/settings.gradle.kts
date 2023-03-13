@@ -1,0 +1,1 @@
+rootProject.name = "com.cruftbusters.ktor-starter-v2.two-way-tls-starter"
